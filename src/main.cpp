@@ -1,13 +1,12 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <IridiumSBD.h>
-// #include <SoftwareSerial.h>
 
 // === Defines ====================================
 
 #define DIAGNOSTICS false
-#define RXD2    32
-#define TXD2    26 // 
+#define RXD2    32 // yellow
+#define TXD2    26 // orange
 #define SLEEP   25 // grey
 
 #define IridiumSerial Serial2
@@ -70,22 +69,6 @@ void setup() {
     }
     Serial.print("On a scale of 0 to 5, signal quality is currently ");
     Serial.print(signalQuality);
-//
-//    // Example: Test the signal quality.
-//    // This returns a number between 0 and 5.
-//    // 2 or better is preferred.
-//    err = modem.getSignalQuality(signalQuality);
-//    if (err != ISBD_SUCCESS)
-//    {
-//    Serial.print("SignalQuality failed: error ");
-//    Serial.println(err);
-//    return;
-//    }
-//
-//    Serial.print("On a scale of 0 to 5, signal quality is currently ");
-//    Serial.print(signalQuality);
-//    Serial.println(".");
-//
 //    // Send the message
 //    Serial.print("Trying to send the message.  This might take several minutes.\r\n");
 //    err = modem.sendSBDText("Hello, world!");
