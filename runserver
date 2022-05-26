@@ -1,0 +1,4 @@
+#!/bin/bash
+export FLASK_APP=server.py
+nohup python3 -m flask run --host=0.0.0.0 > log.txt 2>&1 &
+echo $! > pid_file
