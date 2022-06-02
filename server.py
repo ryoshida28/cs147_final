@@ -1,7 +1,10 @@
-from flask import Flask
-from flask import request
-from flask import render_template
+from flask import Flask, request, json, render_template
 import sqlite3
+from datetime import datetime, timedelta
+
+# Constants
+SAMPLE_PERIOD = 2000    # 2 seconds
+TIMEZONE_DELTA = timedelta(hours=7)
 
 app = Flask(__name__)
 
@@ -19,7 +22,7 @@ def getData():
             lat = json_data["iridium_latitude"]
             lon = json_data["iridium_longitude"]
             cep = json_data["iridium_cep"]
-            data = bytes.fromhex(json_data["data"]).decode("utf-8")
+            data = json_data["data"]
 
             # Store Data
             con = sqlite3.connect('booty.db')
@@ -38,10 +41,28 @@ def getData():
         con = sqlite3.connect('booty.db')
         cur = con.cursor()
         rows = [row for row in cur.execute('SELECT * FROM booty')]
-        rows.insert(0, ["Time", "Latitude", "Longitude", "Accuracy", "Data"])
-        if len(rows) == 1:
+
+        data = list()
+        labels = list()
+        table_data = list()
+        for r in rows:
+            received = datetime.strptime(r[0], '%d-%m-%y %H:%M:%S') - TIMEZONE_DELTA
+            row_data = list()
+            for i,c in enumerate(r[4]):
+                spd = ord(c)
+                row_data.append(spd)
+                data.append(spd)
+                calc_datetime = received - timedelta(milliseconds=SAMPLE_PERIOD*(len(r[4]) - i - 1))
+                labels.append(calc_datetime.strftime('%m/%d %H:%M:%S'))
+
+            table_data.append((received.strftime('%m/%d/%Y %H:%M:%S'), r[1], r[2], r[3], round(sum(row_data)/len(row_data),3), max(row_data), min(row_data)))
+
+        table_data.sort(key=(lambda r: r[0]))
+        headers = ("Time", "Latitude", "Longitude", "Accuracy (km)", "Avg (mph)", "Min (mph)", "Max (mph)")
+
+        if len(table_data) == 1:
             rows.append(["No data present."])
         con.close()
-        return render_template('home.html', rows=rows)
+        return render_template('home.html', headers=headers, rows=table_data, data=json.dumps(data), labels=json.dumps(labels))
 
     return None
