@@ -1,12 +1,14 @@
 from flask import Flask, request, json, render_template
 import sqlite3
 from datetime import datetime, timedelta
+import codecs
 
 # Constants
 SAMPLE_PERIOD = 2000    # 2 seconds
 TIMEZONE_DELTA = timedelta(hours=7)
 
 app = Flask(__name__)
+
 
 @app.route("/", methods=['POST', 'GET'])
 def getData():
@@ -23,7 +25,6 @@ def getData():
             lon = json_data["iridium_longitude"]
             cep = json_data["iridium_cep"]
             data = json_data["data"]
-
             # Store Data
             con = sqlite3.connect('booty.db')
             cur = con.cursor()
@@ -48,8 +49,8 @@ def getData():
         for r in rows:
             received = datetime.strptime(r[0], '%d-%m-%y %H:%M:%S') - TIMEZONE_DELTA
             row_data = list()
-            for i,c in enumerate(r[4]):
-                spd = ord(c)
+            for i in range(0,len(r[4]),2):
+                spd = int(r[4][i:i+2], 16)
                 row_data.append(spd)
                 data.append(spd)
                 calc_datetime = received - timedelta(milliseconds=SAMPLE_PERIOD*(len(r[4]) - i - 1))
