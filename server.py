@@ -58,7 +58,7 @@ def getData():
 
             table_data.append((received.strftime('%m/%d/%Y %H:%M:%S'), r[1], r[2], r[3], round(sum(row_data)/len(row_data),3), max(row_data), min(row_data)))
 
-        table_data.sort(key=(lambda r: r[0]))
+        table_data.sort(key=(lambda r: r[0]), reverse=True)
         headers = ("Time", "Latitude", "Longitude", "Accuracy (km)", "Avg (mph)", "Min (mph)", "Max (mph)")
 
         if len(table_data) == 1:
