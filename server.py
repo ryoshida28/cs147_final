@@ -47,7 +47,7 @@ def getData():
         labels = list()
         table_data = list()
         for r in rows:
-            received = datetime.strptime(r[0], '%d-%m-%y %H:%M:%S') - TIMEZONE_DELTA
+            received = datetime.strptime(r[0], '%y-%m-%d %H:%M:%S') - TIMEZONE_DELTA
             row_data = list()
             for i in range(0,len(r[4]),2):
                 spd = int(r[4][i:i+2], 16)
