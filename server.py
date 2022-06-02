@@ -37,7 +37,7 @@ def getData():
     if request.method == "GET":
         con = sqlite3.connect('booty.db')
         cur = con.cursor()
-        rows = [row for row in cur.execute('SELECT * FROM booty')]
+        rows = [row for row in cur.execute('SELECT * FROM booty ORDER BY ROWID DESC')]
         rows.insert(0, ["Time", "Latitude", "Longitude", "Accuracy", "Data"])
         if len(rows) == 1:
             rows.append(["No data present."])
