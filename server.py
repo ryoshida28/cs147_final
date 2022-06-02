@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import request
 from flask import render_template
-
+import sqlite3
 
 app = Flask(__name__)
 
@@ -20,13 +20,28 @@ def getData():
             lon = json_data["iridium_longitude"]
             cep = json_data["iridium_cep"]
             data = bytes.fromhex(json_data["data"]).decode("utf-8")
+
+            # Store Data
+            con = sqlite3.connect('booty.db')
+            cur = con.cursor()
+            cur.execute("CREATE TABLE IF NOT EXISTS booty(datetime text, latitude real, longitude real, accuracy real, data real)")
+            cur.execute("INSERT INTO booty VALUES(?, ?, ?, ?, ?)", (time, lat, lon, cep, data))
+            con.commit()
+            con.close()
+
             print(f"time: {time}\tlatitude: {lat}\tlongitude: {lon}\tcep: {cep}\tdata: {data}", flush=True)
             return f"time: {time}\tlatitude: {lat}\tlongitude: {lon}\tcep: {cep}\tdata: {data}"
         print("No json data.")
     
     # Display data on page
     if request.method == "GET":
-        rows = [["Time", "Latitude", "Longitude", "Accuracy", "Data"], ["12/01/1999", "12.12", "21.21", "2", "I am speed"]]
+        con = sqlite3.connect('booty.db')
+        cur = con.cursor()
+        rows = [row for row in cur.execute('SELECT * FROM booty')]
+        rows.insert(0, ["Time", "Latitude", "Longitude", "Accuracy", "Data"])
+        if len(rows) == 1:
+            rows.append(["No data present."])
+        con.close()
         return render_template('home.html', rows=rows)
-        
+
     return None
