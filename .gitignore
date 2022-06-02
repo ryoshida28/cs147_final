@@ -5,3 +5,4 @@ log.txt
 pid_file
 *.db
 *.pem
+runssh
