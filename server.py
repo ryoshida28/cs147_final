@@ -28,22 +28,5 @@ def getData():
     if request.method == "GET":
         rows = [["Time", "Latitude", "Longitude", "Accuracy", "Data"], ["12/01/1999", "12.12", "21.21", "2", "I am speed"]]
         return render_template('home.html', rows=rows)
-#         return """
-# <table>
-#   <tr>
-#     <th>Time</th>
-#     <th>Latitude</th>
-#     <th>Longitude</th>
-#     <th>Accuracy</th>
-#     <th>Data</th>
-#   </tr>
-#   <tr>
-#     <td>This is time</td>
-#     <td>Alfreds Futterkiste</td>
-#     <td>Maria Anders</td>
-#     <td>Germany</td>
-#     <td>some data</td>
-#   </tr>
-# </table>
-# """
+        
     return None
