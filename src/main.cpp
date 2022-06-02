@@ -1,3 +1,4 @@
+
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <IridiumSBD.h>
@@ -6,16 +7,18 @@
 
 // === Defines ====================================
 
-#define SENDMODE false
-#define DIAGNOSTICS false
+#define SENDMODE true
+#define DIAGNOSTICS true
 #define RXD2    32 // yellow
 #define TXD2    26 // orange
 #define SLEEP   25 // grey
 #define INTPIN  36 // reed switch
 #define SPDCNST 4997.988312529217
 #define BUFSIZE 200
-#define PAYLOADSIZE 50
-#define TIMERINT 6000000L
+//#define PAYLOADSIZE 50
+// #define TIMERINT 6000000L
+#define PAYLOADSIZE 30
+#define TIMERINT 4000000L
 
 #define IridiumSerial Serial2
 
@@ -88,7 +91,7 @@ void send_data_task(void *param) {
     Serial.println("Starting modem...");
     err = modem.begin();
     if (err != ISBD_SUCCESS) {
-        Serial.print("Begin failed: error");
+        Serial.print("Begin failed: error ");
         Serial.println(err);
         if (err == ISBD_NO_MODEM_DETECTED) Serial.println("No modem detected: check wiring");
         vTaskDelete(nullptr);
@@ -151,8 +154,8 @@ void setup() {
     Serial.println("Starting modem...");
     err = modem.begin();
     if (err != ISBD_SUCCESS) {
-        Serial.print("Begin faild: error ");
-        Serial.println("err");
+        Serial.print("Begin failed: error ");
+        Serial.println(err);
         if (err == ISBD_NO_MODEM_DETECTED) Serial.println("No modem detected: check wiring.");
         return;
     }
@@ -172,6 +175,8 @@ void setup() {
     Serial.print("On a scale of 0 to 5, signal quality is currently ");
     Serial.println(signalQuality);
 
+    modem.adjustSendReceiveTimeout(60);
+
     modem.sleep();
     is_init = true;
     qhead = qtail = qlen = 0;
@@ -181,6 +186,8 @@ void setup() {
 }
 
 void loop() {
+//    Serial.print("Loop :");
+//    Serial.println(xPortGetCoreID());
     if (is_init) { // ensure pin runs on correct core
         attachInterrupt(digitalPinToInterrupt(INTPIN), detect, FALLING);
         timer.attachInterruptInterval(TIMERINT, timer_interrupt);
@@ -198,7 +205,7 @@ void loop() {
     if (qclear && clen >= PAYLOADSIZE) {
         qclear = false;
         xSemaphoreGive(xmutex);
-        xTaskCreate(send_data_task, "TaskSend", 10000, nullptr, 2, nullptr);
+        xTaskCreate(send_data_task, "TaskSend", 10000, nullptr, 0, nullptr);
     } else {
         xSemaphoreGive(xmutex);
     }
@@ -206,6 +213,10 @@ void loop() {
     delay(1000);
 }
 
+bool ISBDCallback() {
+    delay(10);
+    return true;
+}
 
 #if DIAGNOSTICS
 void ISBDConsoleCallback(IridiumSBD *device, char c) { Serial.write(c); }
@@ -214,3 +225,5 @@ void ISBDDiagsCallback(IridiumSBD *device, char c) { Serial.write(c); }
 void ISBDConsoleCallback(IridiumSBD *device, char c) { return; }
 void ISBDDiagsCallback(IridiumSBD *device, char c) { return; }
 #endif
+
+
